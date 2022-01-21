@@ -1,3 +1,7 @@
+#include <string>
+#define VEICULOS 6
+#define MAX_REQ 50
+
 #ifndef DARP_HPP_INCLUDED
 #define DARP_HPP_INCLUDED
 
@@ -49,9 +53,19 @@ typedef struct passageiro
     int tempoEspera;
 } passageiro;
 
-#include <string>
-#define VEICULOS 6
-#define MAX_REQ 50
+typedef struct solucVeiculos
+{
+    int id;
+    int reqAtendidas;
+    int idLocaisAtendidos[MAX_REQ];
+} solucVeiculos;
+
+typedef struct soluc
+{
+    int FO;
+    int qntdVeiculos;
+    solucVeiculos veiculos[VEICULOS];
+} solucao;
 
 int requisicoes, duracaoMaxRota, tempMaxViagem, tempMaxEspera, lixo;
 
@@ -61,6 +75,13 @@ int tempServico[MAX_REQ];
 int inicioJanelaTemp[MAX_REQ];
 int fimJanelaTemp[MAX_REQ];
 int matrizTempDeslocamento[MAX_REQ][MAX_REQ];
+int requisicaoSolucao[MAX_REQ];
+veiculo infoVeiculo[VEICULOS];
+int veiculosUsados[VEICULOS];
+
+void contaVeiculosUsados(int id);
+
+int verificaVeiculosUsados();
 
 void lerDados();
 
@@ -70,4 +91,11 @@ void printOutroVetor(int vet[VEICULOS]);
 
 void printMatriz(int matriz[MAX_REQ][MAX_REQ]);
 
+void clonarSolucao(solucao &original, solucao &clone);
+
+void construtivaAleatoria();
+
+void lerSolucao(solucao &solucao);
+
+void calcularFO(solucao &solucao);
 #endif

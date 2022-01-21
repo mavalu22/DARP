@@ -13,9 +13,11 @@ int main(int argc, const char *argv[])
 {
 
     string instancia = "";
-
-    lerDados();
-    printMatriz(matrizTempDeslocamento);
+    solucao x;
+    // lerDados();
+    // printMatriz(matrizTempDeslocamento);
+    lerSolucao(x);
+    printf("%d %d", x.FO, x.qntdVeiculos);
 }
 
 void lerDados()
@@ -87,4 +89,70 @@ void printMatriz(int matriz[MAX_REQ][MAX_REQ])
             printf("%d \t", matriz[i][j]);
         }
     }
+}
+
+void clonarSolucao(solucao &original, solucao &clone)
+{
+    memcpy(&clone, &original, sizeof(original));
+}
+// https://github.com/eloy-freitas/PRCP/blob/master/main.cpp
+
+void construtivaAleatoria()
+{
+    for (int i = 0; i < requisicoes; i++)
+    {
+        requisicaoSolucao[i] = rand() % VEICULOS;
+        contaVeiculosUsados(requisicaoSolucao[i]);
+    }
+}
+
+void contaVeiculosUsados(int id)
+{
+    veiculosUsados[id] = 1; //lembrar de zerar esse vetor na main
+}
+
+int verificaVeiculosUsados()
+{
+    int total = 0;
+
+    for (int i = 0; i < VEICULOS; i++)
+        total += veiculosUsados[i];
+
+    return total;
+}
+
+void lerSolucao(solucao &solucao)
+{
+    int i = 0, j = 0;
+
+    memset(&solucao.veiculos, 0, sizeof(solucao.veiculos));
+    memset(&solucao.veiculos->idLocaisAtendidos, 0, sizeof(solucao.veiculos->idLocaisAtendidos));
+
+    FILE *f = fopen("teste.txt", "r");
+    fscanf(f, "%d %d", &solucao.FO, &solucao.qntdVeiculos);
+    while (not EOF and j < solucao.qntdVeiculos)
+    {
+        fscanf(f, "%d", &solucao.veiculos[j].id);
+        fscanf(f, "%d", &solucao.veiculos[j].reqAtendidas);
+        locais = (solucao.veiculos->reqAtendidas) * 2 + 2;
+        for (i = 0; i < locais; i++)
+        {
+            fscanf(f, "%d", &solucao.veiculos->idLocaisAtendidos[i]);
+        }
+        j++;
+    }
+    fclose(f);
+}
+
+void calcularFO(solucao &solucao)
+{
+    int distancia;
+    solucao.FO = 10 * solucao.qntdVeiculos;
+
+    for (int i = 0; i < solucao.qntdVeiculos; i++)
+    {
+        distancia = infoVeiculo[i].durRota;
+    }
+
+    solucao.FO += distancia;
 }

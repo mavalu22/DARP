@@ -1,0 +1,22 @@
+- Número de veículos usados.
+- Valor da função objetivo da
+solução.
+- Distância percorrida por todos os veículos.
+- Duração das rotas de todos os veículos.
+- Tempo total de viagem de todas as PPNEs.
+- Tempo total de espera de todas as PPNEs.
+- Número de violações no número de assentos dos veículos.  
+- Número de violações na duração máxima das rotas.                                      ✔
+- Número de violações no tempo máximo de viagem de todas as PPNEs.                      ✔
+- Número de violações no tempo máximo de espera de todas as PPNEs.                      ✔
+- Número de violações nos horários de saída e chegada dos veículos nas garagens.        ✔
+
+Para cada Veículo:
+
+    - Número de requisições atendidas
+    - Número máximo de assentos utilizados.
+    - Duração da rota.
+    - Tempo de viagem das PPNEs atendidas.
+    - Tempo de espera das PPNEs atendidas e as violações das restrições (texto em itálico, porém de forma individual por veículo).
+    - Função objetivo do veículo. 
+    - Sequência de locais que formam a rota do veículo.

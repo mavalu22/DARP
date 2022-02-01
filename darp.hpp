@@ -1,13 +1,11 @@
-#include <string>
-#define VEICULOS 6
-#define MAX_REQ 50
-
 #ifndef DARP_HPP_INCLUDED
 #define DARP_HPP_INCLUDED
 
+#include <string>
+#define VEICULOS 6
+#define MAX_REQ 50
 #define MAX_VIA 1440
 #define MAX_ESP 1440
-#define CARROS 6
 
 int locais;
 
@@ -15,7 +13,7 @@ typedef struct input
 {
     int req;
     int durMaxRot;
-    int vetNumAss[CARROS];
+    int vetNumAss[VEICULOS];
     // int vetNumAssLoc[locais];
     // int vetTempServ[];
     // int vetIniTemp[];
@@ -23,6 +21,12 @@ typedef struct input
     // int matTemp[][];
     int funObj;
 } input;
+
+typedef struct passageiro
+{
+    int tempoViagem;
+    int tempoEspera;
+} passageiro;
 
 typedef struct req
 {
@@ -32,32 +36,26 @@ typedef struct req
 
 typedef struct veiculo
 {
-    int id;
     int vaga;
-    // int requisicoes[];
+    //int requisicoes[];
     int horario;
     int durRota;
-    int durViagem;
-    int tempEspera;
+    int durTotalViagem;
+    int tempTotalEspera;
     int violAssentos;
     int violDurRota;
     int violDurViagem;
     int violTempEsp;
-    int violSaidaChegada;
-
+    int violChegada;
+    passageiro passageiros[MAX_REQ];
 } veiculo;
-
-typedef struct passageiro
-{
-    int tempoViagem;
-    int tempoEspera;
-} passageiro;
 
 typedef struct solucVeiculos
 {
     int id;
     int reqAtendidas;
     int idLocaisAtendidos[MAX_REQ];
+    veiculo infoVeiculo;
 } solucVeiculos;
 
 typedef struct soluc
@@ -76,7 +74,7 @@ int inicioJanelaTemp[MAX_REQ];
 int fimJanelaTemp[MAX_REQ];
 int matrizTempDeslocamento[MAX_REQ][MAX_REQ];
 int requisicaoSolucao[MAX_REQ];
-veiculo infoVeiculo[VEICULOS];
+veiculo totalRestricoes;
 int veiculosUsados[VEICULOS];
 
 void contaVeiculosUsados(int id);
@@ -98,4 +96,15 @@ void construtivaAleatoria();
 void lerSolucao(solucao &solucao);
 
 void calcularFO(solucao &solucao);
+
+void verificaDuracaoRota(solucao &solucao);
+
+void verificaDuracaoViagem(solucao &solucao);
+
+void verificaTempEspera(solucao &solucao);
+
+void verificaHoraChegada(solucao &solucao);
+
+void construtivaAleatoria(solucao &solucao);
+
 #endif

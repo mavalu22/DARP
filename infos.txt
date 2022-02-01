@@ -6,10 +6,10 @@ solução.
 - Tempo total de viagem de todas as PPNEs.
 - Tempo total de espera de todas as PPNEs.
 - Número de violações no número de assentos dos veículos.  
-- Número de violações na duração máxima das rotas.                                      ✔
-- Número de violações no tempo máximo de viagem de todas as PPNEs.                      ✔
-- Número de violações no tempo máximo de espera de todas as PPNEs.                      ✔
-- Número de violações nos horários de saída e chegada dos veículos nas garagens.        ✔
+- Número de violações na duração máxima das rotas.
+- Número de violações no tempo máximo de viagem de todas as PPNEs.
+- Número de violações no tempo máximo de espera de todas as PPNEs.
+- Número de violações nos horários de saída e chegada dos veículos nas garagens.
 
 Para cada Veículo:
 

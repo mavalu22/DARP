@@ -24,6 +24,7 @@ typedef struct input
 
 typedef struct passageiro
 {
+    int horarioEntrada;
     int tempoViagem;
     int tempoEspera;
 } passageiro;
@@ -42,6 +43,7 @@ typedef struct veiculo
     int durRota;
     int durTotalViagem;
     int tempTotalEspera;
+    int distanciaViagem;
     int violAssentos;
     int violDurRota;
     int violDurViagem;

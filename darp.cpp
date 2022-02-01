@@ -110,19 +110,19 @@ void printMatriz(int matriz[MAX_REQ][MAX_REQ])
 
 // https://github.com/eloy-freitas/PRCP/blob/master/main.cpp
 
-void construtivaAleatoria()
-{
-    for (int i = 0; i < requisicoes; i++)
-    {
-        requisicaoSolucao[i] = rand() % VEICULOS;
-        contaVeiculosUsados(requisicaoSolucao[i]);
-    }
-}
+// void construtivaAleatoria()
+// {
+//     for (int i = 0; i < requisicoes; i++)
+//     {
+//         requisicaoSolucao[i] = rand() % VEICULOS;
+//         contaVeiculosUsados(requisicaoSolucao[i]);
+//     }
+// }
 
-void contaVeiculosUsados(int id)
-{
-    veiculosUsados[id] = 1; // lembrar de zerar esse vetor na main
-}
+// void contaVeiculosUsados(int id)
+// {
+//     veiculosUsados[id] = 1; // lembrar de zerar esse vetor na main
+// }
 
 int verificaVeiculosUsados()
 {
@@ -238,16 +238,104 @@ void verificaHoraChegada(solucao &solucao)
 
 void construtivaAleatoria(solucao &solucao)
 {
-    int requisicao, idOnibus;
-    requisicao = (MAX_REQ - 2) / 2;
-    for (int i = 0; i < requisicao; i++)
+    int idOnibus;
+
+    for (int i = 0; i < requisicoes; i++)
     {
         idOnibus = rand() % 6;
-        requisicaoSolucao[i] = idOnibus;
-        requisicaoSolucao[i + 20] = idOnibus;
-        solucao.veiculos[idOnibus].reqAtendidas;
+        solucao.veiculos[idOnibus].reqAtendidas += 1;
+        solucao.veiculos[idOnibus].idLocaisAtendidos[solucao.veiculos[idOnibus].reqAtendidas - 1] = i;
+        solucao.veiculos[idOnibus].reqAtendidas += 1;
+        solucao.veiculos[idOnibus].idLocaisAtendidos[solucao.veiculos[idOnibus].reqAtendidas - 1] = requisicoes + i;
     }
 }
+
+// - Duração da rota.
+// - Número máximo de assentos utilizados.
+// - Número de violações no número de assentos dos veículos.
+
+void durRota(solucao &solucao)
+{
+    int i, j, k, numMaximoAssentos = 0, numAtualAssentos = 0;
+    for (i = 0; i < solucao.qntdVeiculos; i++)
+    {
+        for (j = 0; j < ((solucao.veiculos[i].reqAtendidas) * 2) + 1; j++)
+        {
+            numAtualAssentos = numAssentosLocal[j];
+            numMaximoAssentos = MAX(numAtualAssentos, numMaximoAssentos);
+            if (numAtualAssentos > capacidadeVeic[i])
+            {
+                solucao.veiculos[i].infoVeiculo.violAssentos += 1;
+            }
+            durViagem(solucao, i, solucao.veiculos[i].idLocaisAtendidos[j], solucao.veiculos[i].infoVeiculo.horario);
+            solucao.veiculos[i].infoVeiculo.durRota += matrizTempDeslocamento[solucao.veiculos[i].idLocaisAtendidos[j]][solucao.veiculos[i].idLocaisAtendidos[j + 1]] + tempServico[solucao.veiculos[i].idLocaisAtendidos[j + 1]];
+            solucao.veiculos[i].infoVeiculo.horario += matrizTempDeslocamento[solucao.veiculos[i].idLocaisAtendidos[j]][solucao.veiculos[i].idLocaisAtendidos[j + 1]] + tempServico[solucao.veiculos[i].idLocaisAtendidos[j + 1]];
+            solucao.veiculos[i].infoVeiculo.distanciaViagem += matrizTempDeslocamento[solucao.veiculos[i].idLocaisAtendidos[j]][solucao.veiculos[i].idLocaisAtendidos[j + 1]] + tempServico[solucao.veiculos[i].idLocaisAtendidos[j + 1]];
+            if (solucao.veiculos[i].infoVeiculo.horario < inicioJanelaTemp[solucao.veiculos[i].idLocaisAtendidos[j + 1]])
+            {
+                solucao.veiculos[i].infoVeiculo.horario += (inicioJanelaTemp[solucao.veiculos[i].idLocaisAtendidos[j + 1]] - solucao.veiculos[i].infoVeiculo.horario);
+                solucao.veiculos[i].infoVeiculo.durRota += (inicioJanelaTemp[solucao.veiculos[i].idLocaisAtendidos[j + 1]] - solucao.veiculos[i].infoVeiculo.horario);
+            }
+            if (solucao.veiculos[i].infoVeiculo.horario > fimJanelaTemp[solucao.veiculos[i].idLocaisAtendidos[j + 1]])
+            {
+                solucao.veiculos[i].infoVeiculo.violChegada += 1;
+            }
+        }
+        if (solucao.veiculos[i].infoVeiculo.horario > fimJanelaTemp[0])
+        {
+            solucao.veiculos[i].infoVeiculo.violChegada += 1;
+        }
+        if (solucao.veiculos[i].infoVeiculo.durRota > duracaoMaxRota)
+        {
+            solucao.veiculos[i].infoVeiculo.violDurRota += 1;
+        }
+    }
+}
+
+void durViagem(solucao &solucao, int i, int idLocal, int horario)
+{
+    if (idLocal <= requisicoes)
+    {
+        solucao.veiculos[i].infoVeiculo.passageiros[idLocal].horarioEntrada = horario;
+    }
+    else
+    {
+        solucao.veiculos[i].infoVeiculo.passageiros[idLocal - requisicoes].tempoViagem = horario - solucao.veiculos[i].infoVeiculo.passageiros[idLocal].horarioEntrada;
+        if (solucao.veiculos[i].infoVeiculo.passageiros[idLocal - requisicoes].tempoViagem > tempMaxViagem)
+        {
+            solucao.veiculos[i].infoVeiculo.violDurViagem += 1;
+        }
+    }
+
+    // int k, j;
+    // for (i = 0; i < solucao.qntdVeiculos; i++)
+    // {
+    //     solucao.veiculos[i].infoVeiculo.horario = inicioJanelaTemp[0];
+    //     // - Número de violações na duração máxima das rotas
+
+    //     for (j = 0; j < solucao.veiculos[i].reqAtendidas; j++)
+    //     {
+    //         for (k = j + 1; k < solucao.veiculos[i].reqAtendidas + j + 1; k++)
+    //         {
+    //             // - Tempo de viagem das PPNEs atendidas.
+    //             solucao.veiculos[i].infoVeiculo.passageiros[j].tempoViagem += matrizTempDeslocamento[solucao.veiculos[i].idLocaisAtendidos[k]][solucao.veiculos[i].idLocaisAtendidos[k + 1]];
+    //         }
+    //         if (solucao.veiculos[i].infoVeiculo.passageiros[j].tempoViagem > tempMaxViagem)
+    //         {
+    //             // -Número de violações no tempo máximo de viagem de todas as PPNEs
+    //             solucao.veiculos[i].infoVeiculo.violDurViagem += 1;
+    //         }
+    //     }
+    // }
+}
+// void()
+// {
+//     int i, j, k;
+// }
+// void()
+// {
+//     int i, j, k;
+// }
 
 void solucaoCompleta(solucao &solucao)
 {
@@ -255,33 +343,34 @@ void solucaoCompleta(solucao &solucao)
     // - Número de requisições atendidas.
     // - Função objetivo do veículo.
     // - Sequência de locais que formam a rota do veículo.
+    // - Número de veículos usados.
+    // - Valor da função objetivo da
+    // solução.
     lerSolucao(solucao);
-    for (i = 0; i < VEICULOS; i++)
-    {
-        // solucao.veiculos[i].veiculo.horario = 360;
-        //  - Número máximo de assentos utilizados.
-        solucao.veiculos[i].infoVeiculo.vaga = capacidadeVeic[i];
-        solucao.veiculos[i].infoVeiculo.durRota = 0;
-        for (j = 0; j < VEICULOS - 1; j++)
-        {
-            // - Duração da rota.
-            solucao.veiculos[i].infoVeiculo.durRota += matrizTempDeslocamento[solucao.veiculos[i].idLocaisAtendidos[j]][solucao.veiculos[i].idLocaisAtendidos[j + 1]];
-        }
-        for (j = 0; j < solucao.veiculos[i].reqAtendidas; j++)
-        {
-            for (k = j + 1; k < solucao.veiculos[i].reqAtendidas + j + 1; k++)
-            {
-                // - Tempo de viagem das PPNEs atendidas.
-                solucao.veiculos[i].infoVeiculo.passageiros[j].tempoViagem += matrizTempDeslocamento[solucao.veiculos[i].idLocaisAtendidos[k]][solucao.veiculos[i].idLocaisAtendidos[k + 1]];
-            }
-        }
-    }
+    durRota(solucao);
+    //durViagem(solucao);
 }
 
-// - Tempo de espera das PPNEs atendidas e as violações das restrições (texto em itálico, porém de forma individual por veículo).
+// Lembrar de zerar todos os vetores na main
+// - Número de veículos usados. OK
+// - Valor da função objetivo da
+// solução. OK
+// - Distância percorrida por todos os veículos. (Falta somar)
+// - Duração das rotas de todos os veículos. (Falta somar)
+// - Tempo total de viagem de todas as PPNEs. (Falta somar)
+// - Tempo total de espera de todas as PPNEs.
+// - Número de violações no número de assentos dos veículos. OK
+// - Número de violações na duração máxima das rotas. OK
+// - Número de violações no tempo máximo de viagem de todas as PPNEs. OK
+// - Número de violações no tempo máximo de espera de todas as PPNEs.
+// - Número de violações nos horários de saída e chegada dos veículos nas garagens.
 
-// void heuConAle(Solucao &s)
-// {
-//     for(int j = 0; j < numObj; j++)
-//         s.vetIdMocObj[j] = (rand()%(numMoc+1)) - 1;
-// }
+// Para cada Veículo:
+
+//     - Número de requisições atendidas. OK
+//     - Número máximo de assentos utilizados. OK
+//     - Duração da rota. OK
+//     - Tempo de viagem das PPNEs atendidas. OK
+//     - Tempo de espera das PPNEs atendidas e as violações das restrições (texto em itálico, porém de forma individual por veículo).
+//     - Função objetivo do veículo. OK
+//     - Sequência de locais que formam a rota do veículo. OK

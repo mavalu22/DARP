@@ -13,28 +13,57 @@ int main(int argc, const char *argv[])
 {
     string instancia = "";
     solucao x, y;
-    int i, j;
+    int i, j, requisicoes=0;
 
     srand(time(NULL));
-    // lerDados();
+    lerDados();
     // printMatriz(matrizTempDeslocamento);
-    lerSolucao(x);
-    // printf("%d %d", x.FO, x.qntdVeiculos);
+    lerDados();
+    requisicoes = (locais - 2)/2;
+    //lerSolucao(x);
+    //bubble_sort();
+    construtivaGulosa(x);
+    x.veiculos[0].infoVeiculo.distanciaViagem = 0;
+    x.veiculos[1].infoVeiculo.distanciaViagem = 0;
+    x.veiculos[2].infoVeiculo.distanciaViagem = 0;
+    // durRota(x);
     // clonarSolucao(x, y);
-    // printf("%d %d", y.FO, y.qntdVeiculos);
-    // printf("%d ", x.veiculos[2].reqAtendidas);
-    // printf("%d ", x.veiculos[2].id);
+    // calcularFO(x);
+    // printf("FO = %d", x.FO);
 
-    for (size_t i = 0; i < x.qntdVeiculos; i++)
+
+    // for (int i = 0; i < VEICULOS; i++)
+    // {
+    //     printf("Veiculo: %d\n", i);
+    //     printf("Violacao assento: %d\n", x.veiculos[i].infoVeiculo.violAssentos);
+    //     printf("Violacao Chegada: %d\n", x.veiculos[i].infoVeiculo.violChegada);
+    //     printf("Violacao Duração da rota: %d\n", x.veiculos[i].infoVeiculo.violDurRota);
+    //     printf("Violacao Duração da viagem: %d\n", x.veiculos[i].infoVeiculo.violDurViagem);
+    //     // printf("%d--", inicioJanelaTemp[i].id);
+    //     // printf("%d \t", inicioJanelaTemp[i].valor);
+    //     printf("\n");
+    // }
+
+    
+    for (int i = 0; i < VEICULOS; i++)
     {
-        for (size_t j = 0; j < (x.veiculos[i].reqAtendidas * 2) + 2; j++)
-        {
-            printf("%d ", x.veiculos[i].idLocaisAtendidos[j]);
+        for(int j = 0; j < x.veiculos[i].reqAtendidas*2; j++) {
+           printf("%d \t", x.veiculos[i].idLocaisAtendidos[j]);
         }
         printf("\n");
     }
 
-    // printOutroVetor(x.veiculos[0].idLocaisAtendidos);
+    // impressão do tempo de viagem de cada passageiro
+    // for (int i = 0; i < VEICULOS; i++)
+    // {
+    //     printf("Veiculo %d:\n", i);
+    //     for(int j = 0; j < x.veiculos[i].reqAtendidas*2; j++){
+    //         if(x.veiculos[i].idLocaisAtendidos[j] < requisicoes)
+    //             printf("id:%d --- %d\n", x.veiculos[i].idLocaisAtendidos[j], x.veiculos[i].infoVeiculo.passageiros[x.veiculos[i].idLocaisAtendidos[j]].tempoViagem);
+    //     }
+    //     printf("\n");
+    // }
+    // printf("\n");
 }
 
 void lerDados()
@@ -43,7 +72,7 @@ void lerDados()
     FILE *f = fopen("darp1.txt", "r");
 
     fscanf(f, "%d %d %d %d %d", &lixo, &requisicoes, &duracaoMaxRota, &tempMaxViagem, &tempMaxEspera);
-
+    
     locais = (requisicoes * 2) + 2;
 
     for (int i = 0; i < VEICULOS; i++)
@@ -63,21 +92,24 @@ void lerDados()
 
     for (int i = 0; i < locais; i++)
     {
-        fscanf(f, "%d", &inicioJanelaTemp[i]);
+        inicioJanelaTemp[i].id = i;
+        fscanf(f, "%d", &inicioJanelaTemp[i].valor);
     }
 
     for (int i = 0; i < locais; i++)
     {
         fscanf(f, "%d", &fimJanelaTemp[i]);
     }
+    
     for (int i = 0; i < locais; i++)
     {
         for (int j = 0; j < locais; j++)
         {
             fscanf(f, "%d", &matrizTempDeslocamento[i][j]);
-            // printf("%d %d\n", i, j);
+
         }
     }
+    
     fclose(f);
 }
 
@@ -149,7 +181,7 @@ void lerSolucao(solucao &solucao)
 
         fscanf(f, "%d", &solucao.veiculos[j].id);
         fscanf(f, "%d", &solucao.veiculos[j].reqAtendidas);
-        locaisAt = (solucao.veiculos[j].reqAtendidas * 2) + 2;
+        locaisAt = (solucao.veiculos[j].reqAtendidas * 2);
         for (i = 0; i < locaisAt; i++)
         {
             // printf("teste");
@@ -254,12 +286,61 @@ void construtivaAleatoria(solucao &solucao)
 // - Número máximo de assentos utilizados.
 // - Número de violações no número de assentos dos veículos.
 
+void efetuaSomaRota(solucao &solucao, int i, int j)
+{
+    durViagem(solucao, i, solucao.veiculos[i].idLocaisAtendidos[j], solucao.veiculos[i].infoVeiculo.horario);
+    solucao.veiculos[i].infoVeiculo.durRota += matrizTempDeslocamento[solucao.veiculos[i].idLocaisAtendidos[j]][solucao.veiculos[i].idLocaisAtendidos[j + 1]] + tempServico[solucao.veiculos[i].idLocaisAtendidos[j + 1]];
+    solucao.veiculos[i].infoVeiculo.horario += matrizTempDeslocamento[solucao.veiculos[i].idLocaisAtendidos[j]][solucao.veiculos[i].idLocaisAtendidos[j + 1]] + tempServico[solucao.veiculos[i].idLocaisAtendidos[j + 1]];
+    solucao.veiculos[i].infoVeiculo.distanciaViagem += matrizTempDeslocamento[solucao.veiculos[i].idLocaisAtendidos[j]][solucao.veiculos[i].idLocaisAtendidos[j + 1]];
+    if (solucao.veiculos[i].infoVeiculo.horario < inicioJanelaTemp[solucao.veiculos[i].idLocaisAtendidos[j + 1]].valor)
+    {
+        solucao.veiculos[i].infoVeiculo.horario += (inicioJanelaTemp[solucao.veiculos[i].idLocaisAtendidos[j + 1]].valor - solucao.veiculos[i].infoVeiculo.horario);
+        solucao.veiculos[i].infoVeiculo.durRota += (inicioJanelaTemp[solucao.veiculos[i].idLocaisAtendidos[j + 1]].valor - solucao.veiculos[i].infoVeiculo.horario);
+    }
+    if (solucao.veiculos[i].infoVeiculo.horario > fimJanelaTemp[solucao.veiculos[i].idLocaisAtendidos[j + 1]])
+    {
+        solucao.veiculos[i].infoVeiculo.violChegada += 1;
+    }    
+}
+
+void efetuaSomaGaragemSaida(solucao &solucao, int i, int j)
+{
+    solucao.veiculos[i].infoVeiculo.durRota += matrizTempDeslocamento[0][solucao.veiculos[i].idLocaisAtendidos[j]] + tempServico[solucao.veiculos[i].idLocaisAtendidos[j]];
+    solucao.veiculos[i].infoVeiculo.horario += matrizTempDeslocamento[0][solucao.veiculos[i].idLocaisAtendidos[j]] + tempServico[solucao.veiculos[i].idLocaisAtendidos[j]];
+    solucao.veiculos[i].infoVeiculo.distanciaViagem += matrizTempDeslocamento[0][solucao.veiculos[i].idLocaisAtendidos[j]];
+    if (solucao.veiculos[i].infoVeiculo.horario < inicioJanelaTemp[solucao.veiculos[i].idLocaisAtendidos[j]].valor)
+    {
+        solucao.veiculos[i].infoVeiculo.horario += (inicioJanelaTemp[solucao.veiculos[i].idLocaisAtendidos[j]].valor - solucao.veiculos[i].infoVeiculo.horario);
+        solucao.veiculos[i].infoVeiculo.durRota += (inicioJanelaTemp[solucao.veiculos[i].idLocaisAtendidos[j]].valor - solucao.veiculos[i].infoVeiculo.horario);
+    }
+    if (solucao.veiculos[i].infoVeiculo.horario > fimJanelaTemp[solucao.veiculos[i].idLocaisAtendidos[j]])
+    {
+        solucao.veiculos[i].infoVeiculo.violChegada += 1;
+    }  
+}
+
+void efetuaSomaGaragemChegada(solucao &solucao, int i, int j)
+{
+    printf("na saida %d\n", solucao.veiculos[i].idLocaisAtendidos[j]);
+    durViagem(solucao, i, j, solucao.veiculos[i].infoVeiculo.horario);
+    solucao.veiculos[i].infoVeiculo.durRota += matrizTempDeslocamento[j][locais-1];
+    solucao.veiculos[i].infoVeiculo.horario += matrizTempDeslocamento[j][locais-1];
+    solucao.veiculos[i].infoVeiculo.distanciaViagem += matrizTempDeslocamento[j][locais-1];
+    if (solucao.veiculos[i].infoVeiculo.horario > fimJanelaTemp[locais-1])
+    {
+        solucao.veiculos[i].infoVeiculo.violChegada += 1;
+    }   
+}
+
 void durRota(solucao &solucao)
 {
-    int i, j, k, numMaximoAssentos = 0, numAtualAssentos = 0;
+    int i, j, k, numMaximoAssentos = 0, numAtualAssentos = 0, locaisVeiculo = 0;
     for (i = 0; i < solucao.qntdVeiculos; i++)
     {
-        for (j = 0; j < ((solucao.veiculos[i].reqAtendidas) * 2) + 1; j++)
+        locaisVeiculo = solucao.veiculos[i].reqAtendidas * 2; // acho que não precisa do +1
+
+        efetuaSomaGaragemSaida(solucao, i, 0);
+        for (j = 0; j < locaisVeiculo - 1; j++)
         {
             numAtualAssentos = numAssentosLocal[j];
             numMaximoAssentos = MAX(numAtualAssentos, numMaximoAssentos);
@@ -267,20 +348,12 @@ void durRota(solucao &solucao)
             {
                 solucao.veiculos[i].infoVeiculo.violAssentos += 1;
             }
-            durViagem(solucao, i, solucao.veiculos[i].idLocaisAtendidos[j], solucao.veiculos[i].infoVeiculo.horario);
-            solucao.veiculos[i].infoVeiculo.durRota += matrizTempDeslocamento[solucao.veiculos[i].idLocaisAtendidos[j]][solucao.veiculos[i].idLocaisAtendidos[j + 1]] + tempServico[solucao.veiculos[i].idLocaisAtendidos[j + 1]];
-            solucao.veiculos[i].infoVeiculo.horario += matrizTempDeslocamento[solucao.veiculos[i].idLocaisAtendidos[j]][solucao.veiculos[i].idLocaisAtendidos[j + 1]] + tempServico[solucao.veiculos[i].idLocaisAtendidos[j + 1]];
-            solucao.veiculos[i].infoVeiculo.distanciaViagem += matrizTempDeslocamento[solucao.veiculos[i].idLocaisAtendidos[j]][solucao.veiculos[i].idLocaisAtendidos[j + 1]] + tempServico[solucao.veiculos[i].idLocaisAtendidos[j + 1]];
-            if (solucao.veiculos[i].infoVeiculo.horario < inicioJanelaTemp[solucao.veiculos[i].idLocaisAtendidos[j + 1]])
-            {
-                solucao.veiculos[i].infoVeiculo.horario += (inicioJanelaTemp[solucao.veiculos[i].idLocaisAtendidos[j + 1]] - solucao.veiculos[i].infoVeiculo.horario);
-                solucao.veiculos[i].infoVeiculo.durRota += (inicioJanelaTemp[solucao.veiculos[i].idLocaisAtendidos[j + 1]] - solucao.veiculos[i].infoVeiculo.horario);
-            }
-            if (solucao.veiculos[i].infoVeiculo.horario > fimJanelaTemp[solucao.veiculos[i].idLocaisAtendidos[j + 1]])
-            {
-                solucao.veiculos[i].infoVeiculo.violChegada += 1;
-            }
+            efetuaSomaRota(solucao, i, j);
+            
         }
+        printf("teste demais %d\n", solucao.veiculos[i].idLocaisAtendidos[locaisVeiculo-1]);
+        efetuaSomaGaragemChegada(solucao, i, solucao.veiculos[i].idLocaisAtendidos[locaisVeiculo-1]);
+
         if (solucao.veiculos[i].infoVeiculo.horario > fimJanelaTemp[0])
         {
             solucao.veiculos[i].infoVeiculo.violChegada += 1;
@@ -296,37 +369,18 @@ void durViagem(solucao &solucao, int i, int idLocal, int horario)
 {
     if (idLocal <= requisicoes)
     {
+        printf("entrou %d\n", idLocal);       
         solucao.veiculos[i].infoVeiculo.passageiros[idLocal].horarioEntrada = horario;
     }
     else
     {
-        solucao.veiculos[i].infoVeiculo.passageiros[idLocal - requisicoes].tempoViagem = horario - solucao.veiculos[i].infoVeiculo.passageiros[idLocal].horarioEntrada;
+        printf("id: %d ---- entrou seh %d\n", idLocal - requisicoes,horario - solucao.veiculos[i].infoVeiculo.passageiros[idLocal - requisicoes].horarioEntrada);       
+        solucao.veiculos[i].infoVeiculo.passageiros[idLocal - requisicoes].tempoViagem = horario - solucao.veiculos[i].infoVeiculo.passageiros[idLocal - requisicoes].horarioEntrada;
         if (solucao.veiculos[i].infoVeiculo.passageiros[idLocal - requisicoes].tempoViagem > tempMaxViagem)
         {
             solucao.veiculos[i].infoVeiculo.violDurViagem += 1;
         }
     }
-
-    // int k, j;
-    // for (i = 0; i < solucao.qntdVeiculos; i++)
-    // {
-    //     solucao.veiculos[i].infoVeiculo.horario = inicioJanelaTemp[0];
-    //     // - Número de violações na duração máxima das rotas
-
-    //     for (j = 0; j < solucao.veiculos[i].reqAtendidas; j++)
-    //     {
-    //         for (k = j + 1; k < solucao.veiculos[i].reqAtendidas + j + 1; k++)
-    //         {
-    //             // - Tempo de viagem das PPNEs atendidas.
-    //             solucao.veiculos[i].infoVeiculo.passageiros[j].tempoViagem += matrizTempDeslocamento[solucao.veiculos[i].idLocaisAtendidos[k]][solucao.veiculos[i].idLocaisAtendidos[k + 1]];
-    //         }
-    //         if (solucao.veiculos[i].infoVeiculo.passageiros[j].tempoViagem > tempMaxViagem)
-    //         {
-    //             // -Número de violações no tempo máximo de viagem de todas as PPNEs
-    //             solucao.veiculos[i].infoVeiculo.violDurViagem += 1;
-    //         }
-    //     }
-    // }
 }
 // void()
 // {
@@ -349,6 +403,69 @@ void solucaoCompleta(solucao &solucao)
     lerSolucao(solucao);
     durRota(solucao);
     //durViagem(solucao);
+}
+
+void bubble_sort()
+{
+  vetor temp;
+  int i, j, tam = (locais-2)/2;
+  
+  for(i = 1; i < tam; i++){
+    for(j = 1; j < tam; j++){
+      if(inicioJanelaTemp[i].valor < inicioJanelaTemp[j].valor){
+        temp = inicioJanelaTemp[i];
+        inicioJanelaTemp[i] = inicioJanelaTemp[j];
+        inicioJanelaTemp[j] = temp;
+      }
+    }
+  }
+}
+
+int buscaVetor(solucao &solucao, int chave)
+{
+    for(int i = 0; i < VEICULOS; i++){
+        for(int j =0; j < solucao.veiculos[i].reqAtendidas; j++){
+            if(solucao.veiculos[i].idLocaisAtendidos[j] == chave)
+                return i;
+        }
+    }
+    return -1;
+}
+
+void construtivaGulosa(solucao &solucao)
+{
+    int i, j=0, req, idInsercao, posicaoEntrada, posicaoInsercaoChegada;
+    req = (locais - 2) / 2;
+    unsigned int posicaoInsercao[VEICULOS];
+    memset(posicaoInsercao, 0, sizeof(posicaoInsercao));
+    for(int i = 0; i < req; i++)
+    {
+        idInsercao = posicaoInsercao[j];
+        solucao.veiculos[j].idLocaisAtendidos[idInsercao] = inicioJanelaTemp[i].id;
+        solucao.veiculos[j].reqAtendidas += 1;
+        posicaoInsercao[j] += 1;
+
+        if((solucao.veiculos[j].reqAtendidas % capacidadeVeic[j]) == 0 )
+        {
+            posicaoEntrada = posicaoInsercao[j] - (capacidadeVeic[j]-1);
+            //printf("Entrada ---- %d\n", posicaoEntrada);
+            for(int i = 0; i < capacidadeVeic[j]; i++)
+            {
+                idInsercao = solucao.veiculos[j].idLocaisAtendidos[posicaoEntrada] * req;
+                printf("j=%d ---- id --- %d\n", j, solucao.veiculos[j].idLocaisAtendidos[posicaoEntrada]);
+                solucao.veiculos[j].idLocaisAtendidos[posicaoInsercao[j]] = idInsercao;
+                posicaoInsercao[j] += 1;
+                posicaoEntrada += 1;
+            }
+        }
+
+        if(j == 5)
+        {
+            j = 0;
+        } else {
+            j++;
+        } 
+    }
 }
 
 // Lembrar de zerar todos os vetores na main

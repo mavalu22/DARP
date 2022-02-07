@@ -3,7 +3,7 @@
 
 #include <string>
 #define VEICULOS 6
-#define MAX_REQ 50
+#define MAX_REQ 120
 #define MAX_VIA 1440
 #define MAX_ESP 1440
 
@@ -67,21 +67,23 @@ typedef struct soluc
     solucVeiculos veiculos[VEICULOS];
 } solucao;
 
+typedef struct vet
+{
+    int id;
+    int valor;
+} vetor;
+
 int requisicoes, duracaoMaxRota, tempMaxViagem, tempMaxEspera, lixo;
 
 int capacidadeVeic[VEICULOS];
 int numAssentosLocal[MAX_REQ];
 int tempServico[MAX_REQ];
-int inicioJanelaTemp[MAX_REQ];
+vetor inicioJanelaTemp[MAX_REQ];
 int fimJanelaTemp[MAX_REQ];
 int matrizTempDeslocamento[MAX_REQ][MAX_REQ];
 int requisicaoSolucao[MAX_REQ];
 veiculo totalRestricoes;
 int veiculosUsados[VEICULOS];
-
-void contaVeiculosUsados(int id);
-
-int verificaVeiculosUsados();
 
 void lerDados();
 
@@ -91,13 +93,15 @@ void printOutroVetor(int vet[VEICULOS]);
 
 void printMatriz(int matriz[MAX_REQ][MAX_REQ]);
 
-void clonarSolucao(solucao &original, solucao &clone);
-
-void construtivaAleatoria();
+int verificaVeiculosUsados();
 
 void lerSolucao(solucao &solucao);
 
+void clonarSolucao(solucao &original, solucao &clone);
+
 void calcularFO(solucao &solucao);
+
+void verificaPenalidade(solucao &solucao);
 
 void verificaDuracaoRota(solucao &solucao);
 
@@ -108,5 +112,23 @@ void verificaTempEspera(solucao &solucao);
 void verificaHoraChegada(solucao &solucao);
 
 void construtivaAleatoria(solucao &solucao);
+
+void efetuaSomaRota(solucao &solucao, int i, int j);
+
+void efetuaSomaGaragemSaida(solucao &solucao, int i, int j);
+
+void efetuaSomaGaragemChegada(solucao &solucao, int i, int j);
+
+void durRota(solucao &solucao);
+
+void durViagem(solucao &solucao, int i, int idLocal, int horario);
+
+void solucaoCompleta(solucao &solucao);
+
+void bubble_sort();
+
+int buscaVetor(solucao &solucao, int chave);
+
+void construtivaGulosa(solucao &solucao);
 
 #endif

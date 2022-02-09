@@ -38,7 +38,7 @@ typedef struct req
 typedef struct veiculo
 {
     int vaga;
-    //int requisicoes[];
+    // int requisicoes[];
     int horario;
     int durRota;
     int durTotalViagem;
@@ -49,6 +49,7 @@ typedef struct veiculo
     int violDurViagem;
     int violTempEsp;
     int violChegada;
+    int violChegadaLocal;
     passageiro passageiros[MAX_REQ];
 } veiculo;
 
@@ -130,5 +131,17 @@ void bubble_sort();
 int buscaVetor(solucao &solucao, int chave);
 
 void construtivaGulosa(solucao &solucao);
+
+void construtivaGulosa2(solucao &solucao);
+
+void esperaPPE(solucao &solucao, int atraso, int idVeiculo);
+
+int buscaId(int chave);
+
+void somaEsperaPPNE(solucao &solucao);
+
+void printTela(solucao &solucao);
+
+void somaRestricao(solucao &solucao);
 
 #endif

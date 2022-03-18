@@ -20,3 +20,10 @@ Para cada Veículo:
     - Tempo de espera das PPNEs atendidas e as violações das restrições (texto em itálico, porém de forma individual por veículo).
     - Função objetivo do veículo. 
     - Sequência de locais que formam a rota do veículo.
+
+
+o primeiro for é para percorrer todas as requisições
+o segundo for é para percorrer todas os veiculos
+Pensar como fazer as trocas
+salvar o id da requisição e do veiculo da melhor FO
+flag é pra sair do while e fazer a troca da melhor FO obtida

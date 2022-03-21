@@ -79,4 +79,6 @@ void excluirMatriz(int requisicao, solucao &s);
 void insereMatriz(int requisicao, int carro, solucao &s);
 void ils(const double tempo_max, solucao &s, double &tempo_melhor, double &tempo_total);
 void heuBLMM(solucao &s);
+int localInsercao(int requisicao, int carro, solucao &s);
+void insereMatriz2(int requisicao, int carro, solucao &s);
 #endif

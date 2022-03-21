@@ -1,6 +1,7 @@
 #include <iostream>
 #include <memory.h>
 #include <tuple>
+#include <ctime>
 // #include <time.h>
 
 #include "darp_trab2.hpp"
@@ -25,10 +26,11 @@ using namespace std;
 
 int main(int argc, char *argv[])
 {
+    srand(0);
     solucao sol;
     string instancia = "darp3.txt";
     string saida = "saida.txt"; // "" para mostrar na tela
-    double tempo_limite = 30;
+    double tempo_limite = 100;
     double tempo_melhor, tempo_total;
 
     lerDados(instancia);
@@ -39,14 +41,13 @@ int main(int argc, char *argv[])
     heuConGul(sol);
     calcFO(sol);
 
-    // excluirMatriz(1, sol);
-    // excluirMatriz(51, sol);
-    // sol.vetQtdLocAte[0]--;
-    // sol.vetQtdLocAte[0]--;
-    // insereMatriz(1, 3, sol);
-
+    // excluirMatriz(8, sol);
+    // excluirMatriz(58, sol);
+    // insereMatriz(8, 3, sol);
+    //gerar_vizinha(sol);
     ils(tempo_limite, sol, tempo_melhor, tempo_total);
-
+    //heuBLMM(sol);
+    calcFO(sol);
     escArquivo(sol, saida);
     escProblema(saida);
     escSolucao(sol, saida);
@@ -74,13 +75,16 @@ void ils(const double tempo_max, solucao &s, double &tempo_melhor, double &tempo
         memcpy(&s_vizinha, &s, sizeof(s));
         gerar_vizinha(s_vizinha);
         heuBLMM(s_vizinha);
+
         if (s_vizinha.funObj < s.funObj)
         {
             memcpy(&s, &s_vizinha, sizeof(s_vizinha));
             hF = clock();
             tempo_melhor = ((double)(hF - hI)) / CLOCKS_PER_SEC;
+            escArquivo(s, "saida.txt");
 
             printf("FO: %d\tTempo: %.2f\n", s.funObj, tempo_melhor);
+
         }
         hF = clock();
         tempo_total = ((double)(hF - hI)) / CLOCKS_PER_SEC;
@@ -89,44 +93,47 @@ void ils(const double tempo_max, solucao &s, double &tempo_melhor, double &tempo
 
 void gerar_vizinha(solucao &s)
 {
-    int veic1, veic2, in, out, flag;
-    while (true)
+    int veic1, veic2, in, out, flag, posReq, req;
+
+    flag = 0;
+    
+    veic1 = rand() % s.numVeiUsa;
+    do
+        veic2 = rand() % s.numVeiUsa;
+    while (veic2 == veic1);
+
+    //printf("FO antes : %d\n", s.funObj);
+
+    // printf("Entrada veiculo %d : %d , Saida veiculo %d : %d\n", veic1, s.matAteVei[veic1][0], veic1, s.matAteVei[veic1][1]);
+    // printf("Entrada veiculo %d : %d , Saida veiculo %d : %d\n", veic2, s.matAteVei[veic2][0], veic2, s.matAteVei[veic2][1]);
+    
+    do
     {
-        flag = 0;
-        srand(time(NULL));
-        veic1 = rand() % 5;
-        do
-            veic2 = rand() % 5;
-        while (veic2 == veic1);
+        posReq = rand() % s.vetQtdLocAte[veic1];
+    } while (s.matAteVei[veic1][posReq] > numReq);
+    
+    req = s.matAteVei[veic1][posReq];
+    
 
-        printf("FO antes : %d\n", s.funObj);
 
-        // printf("Entrada veiculo %d : %d , Saida veiculo %d : %d\n", veic1, s.matAteVei[veic1][0], veic1, s.matAteVei[veic1][1]);
-        // printf("Entrada veiculo %d : %d , Saida veiculo %d : %d\n", veic2, s.matAteVei[veic2][0], veic2, s.matAteVei[veic2][1]);
-
-        if ((s.matAteVei[veic1][0] == s.matAteVei[veic1][1] - numReq) && (s.matAteVei[veic2][0] == s.matAteVei[veic2][1] - numReq))
-        {
-            in = s.matAteVei[veic1][0];
-            out = s.matAteVei[veic1][1];
-            s.matAteVei[veic1][0] = s.matAteVei[veic2][0];
-            s.matAteVei[veic1][1] = s.matAteVei[veic2][1];
-            s.matAteVei[veic2][0] = in;
-            s.matAteVei[veic2][1] = out;
-            flag = 1;
-        }
-        if (flag)
-            break;
-    }
+    // printf("vetor: %d \n", s.matAteVei[veic1][posReq]);
+    //printf("req: %d \n", posReq);
+    // printf("carro: %d \n", veic1);
+    
+    excluirMatriz(req, s);
+    excluirMatriz(req+numReq, s);
+    insereMatriz(req, veic2, s);
 
     // printf("----------------------------------------------------\n");
     calcFO(s);
-    printf("FO depois : %d\n", s.funObj);
+    //printf("FO depois : %d\n", s.funObj);
     // printf("Nova Entrada veiculo %d : %d , Nova Saida veiculo %d : %d\n", veic1, s.matAteVei[veic1][0], veic1, s.matAteVei[veic1][1]);
     // printf("Nova Entrada veiculo %d : %d , Nova Saida veiculo %d : %d\n", veic2, s.matAteVei[veic2][0], veic2, s.matAteVei[veic2][1]);
 }
 
 void heuBLMM(solucao &s)
 {
+
     int flag, i, j;
     solucao melhor, aux;
     memcpy(&melhor, &s, sizeof(s));
@@ -139,20 +146,20 @@ void heuBLMM(solucao &s)
         {
             for (j = 0; j < numVei; j++)
             {
-                if (get<0>(buscaMatriz(i, aux)) != j)
+                if (get<0>(buscaMatriz(i, s)) != j)
                 {
                     excluirMatriz(i, aux);
                     excluirMatriz(i + numReq, aux);
-                    aux.vetQtdLocAte[j] = aux.vetQtdLocAte[j] - 2;
-                    insereMatriz(i, j, aux);
+                    insereMatriz(i, j, aux);                  
                     calcFO(aux);
-                    if (aux.funObj < melhor.funObj)
+                    if (aux.funObj < melhor.funObj && aux.funObj != 0)
                     {
                         memcpy(&melhor, &aux, sizeof(aux));
                         flag = 1;
                     }
                 }
             }
+            memcpy(&aux, &s, sizeof(s));
         }
         if (flag)
         {
@@ -551,14 +558,81 @@ void excluirMatriz(int requisicao, solucao &s)
     {
         s.matAteVei[carro][j] = s.matAteVei[carro][j + 1];
     }
-    //lembrar de tirar uma posição do s.vetQtdLocAte[carro] depois de chamar essa função com a entrada da saida
+    s.vetQtdLocAte[carro]--;
 }
 
-void insereMatriz(int requisicao, int carro, solucao &s)
+void insereMatriz2(int requisicao, int carro, solucao &s)
 {
     s.matAteVei[carro][s.vetQtdLocAte[carro]] = requisicao;
     s.matAteVei[carro][s.vetQtdLocAte[carro] + 1] = requisicao + numReq;
     // printf("%d \n", s.vetQtdLocAte[carro]);
     s.vetQtdLocAte[carro]++;
     s.vetQtdLocAte[carro]++;
+}
+
+// void insereMatriz(int requisicao, int carro, solucao &s)
+// {
+//     int posicao = localInsercao(requisicao, carro, s);
+//     if(posicao != -1)
+//     {
+//         //printf("antes do for \n");
+//         for(int j = s.vetQtdLocAte[carro]; j > posicao; j--)
+//         {
+//             s.matAteVei[carro][j+2] = s.matAteVei[carro][j]; 
+//         }
+//         //printf("depois do for \n");
+//         s.matAteVei[carro][posicao] = requisicao;
+//         s.matAteVei[carro][posicao+1] = requisicao + numReq;
+//         //printf("depois da atribuição \n");
+//         s.vetQtdLocAte[carro] = s.vetQtdLocAte[carro] +2;
+//     } else {
+//         //printf("não funcionou o local de insercao");
+//     }
+
+// }
+
+void insereMatriz(int requisicao, int carro, solucao &s)
+{
+    int posicao = localInsercao(requisicao, carro, s), aux[MAX_LOC], i;
+    //printf("posicao: %d, requisição: %d \n", posicao, requisicao);
+    if(posicao != -1)
+    {
+        // printf("antes do for \n");
+        i=0;
+        for(int j = 0; j < s.vetQtdLocAte[carro]; j++)
+        {
+            if(j == posicao)
+            {
+                aux[j] = requisicao;
+                j++;
+                aux[j] = requisicao + numReq;
+                j++;
+                s.vetQtdLocAte[carro] = s.vetQtdLocAte[carro] +2;
+            }
+            aux[j] = s.matAteVei[carro][i];
+
+            i++;
+        }
+        // printf("aaaa\n");
+
+        
+
+        for(i = 0; i < s.vetQtdLocAte[carro]; i++)
+        {
+            s.matAteVei[carro][i] = aux[i];
+        }
+    } else {
+        insereMatriz2(requisicao, carro, s);
+    }
+
+}
+
+int localInsercao(int requisicao, int carro, solucao &s)
+{
+    for(int j = 0; j < s.vetQtdLocAte[carro]; j++)
+    {
+        if(vetFinJTLoc[requisicao] < vetFinJTLoc[s.matAteVei[carro][j]])
+            return j;
+    }
+    return -1;
 }
